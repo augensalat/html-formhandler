@@ -569,6 +569,8 @@ has 'input_without_param' => (
 has 'not_nullable' => ( is => 'ro', isa => 'Bool' );
 has 'init_value' => ( is => 'rw', clearer => 'clear_init_value' );
 has 'default' => ( is => 'rw' );
+has 'default_over_obj' => ( is => 'rw', builder => 'build_default_over_obj' );
+sub build_default_over_obj { }
 has 'result' => (
     isa       => 'HTML::FormHandler::Field::Result',
     is        => 'ro',
@@ -916,6 +918,9 @@ sub _result_from_fields {
     my ( $self, $result ) = @_;
 
     if ( my @values = $self->get_default_value ) {
+        if ( $self->_can_deflate ) {
+            @values = $self->_apply_deflation(@values);
+        }
         my $value = @values > 1 ? \@values : shift @values;
         $self->init_value($value)   if defined $value;
         $result->_set_value($value) if defined $value;
